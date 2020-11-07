@@ -1,7 +1,7 @@
-namespace SeungyongShim.Akka.Extensions.DependencyInjection.TestKit
+namespace Akka.DI.Extensions.DependencyInjection.TestKit
 {
-    using global::Akka.Actor;
-    using global::Akka.DI.Core;
+    using Akka.Actor;
+    using Akka.DI.Core;
     using Microsoft.Extensions.DependencyInjection;
 
     public class PropsFactory<T, R> : IPropsFactory<T> where T : ActorBase where R : ActorBase
@@ -12,6 +12,7 @@ namespace SeungyongShim.Akka.Extensions.DependencyInjection.TestKit
 
         public Props Create() => ActorSystem.DI().Props<R>();
     }
+
     public class MockChildActor : ReceiveActor
     {
         public MockChildActor(IActorRef testActor) =>

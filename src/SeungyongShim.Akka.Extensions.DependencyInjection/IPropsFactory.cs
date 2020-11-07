@@ -2,7 +2,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     using Akka.Actor;
 
-    public interface IPropsFactory<T> where T : ActorBase
+    public interface IPropsFactory<out T> where T : ActorBase
     {
         Props Create();
     }

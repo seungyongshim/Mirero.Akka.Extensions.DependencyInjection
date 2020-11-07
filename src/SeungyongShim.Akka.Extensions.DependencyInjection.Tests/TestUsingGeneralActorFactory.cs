@@ -1,47 +1,60 @@
 namespace Tests
 {
+    using System.Threading.Tasks;
     using Akka.Actor;
     using Akka.DI.Core;
     using Akka.TestKit.Xunit2;
     using FluentAssertions;
+    using FluentAssertions.Extensions;
     using Microsoft.Extensions.DependencyInjection;
-    using SeungyongShim.Akka.Extensions.DependencyInjection.TestKit;
+    using Akka.DI.Extensions.DependencyInjection.TestKit;
     using Xunit;
 
     public class TestUsingGeneralActorFactory : TestKit
     {
         [Fact]
-        public void Check_Child_Actor_Recieved_Messages()
+        public async Task Check_Child_Actor_Recieved_Messages()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ActorSystem>(sp => Sys);
             services.AddSingleton<IActorRef>(sp => TestActor);
             services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
-            services.AddSingleton<IPropsFactory<ParentActor>, PropsFactory<ParentActor>>();
             services.AddTransient<ParentActor>();
             services.AddTransient<MockChildActor>();
+            services.AddAkka(Sys);
+
             Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
 
-            ActorOf(Sys.DI().PropsFactory<ParentActor>().Create());
+            ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectMsg<string>().Should().Be("Hello, Kid");
             ExpectMsg<string>().Should().Be("Hello, Kid");
+
+            var child1 = await Sys.ActorSelection("/user/Parent/Child1").ResolveOne(5.Seconds());
+            child1.Path.Name.Should().Be("Child1");
+
+            var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
+            child2.Path.Name.Should().Be("Child2");
         }
 
         [Fact]
-        public void Production()
+        public async Task Production()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ActorSystem>(sp => Sys);
-            services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor>>();
-            services.AddSingleton<IPropsFactory<ParentActor>, PropsFactory<ParentActor>>();
             services.AddTransient<ParentActor>();
             services.AddTransient<ChildActor>();
+            services.AddAkka(Sys);
+
             Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
 
-            ActorOf(Sys.DI().PropsFactory<ParentActor>().Create());
+            ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectNoMsg();
+
+            var child1 = await Sys.ActorSelection("/user/Parent/Child1").ResolveOne(5.Seconds());
+            child1.Path.Name.Should().Be("Child1");
+
+            var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
+            child2.Path.Name.Should().Be("Child2");
         }
 
         private class ChildActor : ReceiveActor
@@ -56,8 +69,8 @@ namespace Tests
         {
             public ParentActor()
             {
-                var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create());
-                var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create());
+                var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
+                var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
 
                 childActor1.Tell("Hello, Kid");
                 childActor2.Tell("Hello, Kid");
