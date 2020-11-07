@@ -36,6 +36,7 @@ class ParentActor : ReceiveActor
 ```
 
 ## 2. UnitTest using MockChildActor
+```csharp
 [Fact]
 public async Task Check_Child_Actor_Recieved_Messages()
 {
@@ -59,5 +60,5 @@ public async Task Check_Child_Actor_Recieved_Messages()
     var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
     child2.Path.Name.Should().Be("Child2");
 }
-
+```
 
