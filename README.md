@@ -13,12 +13,6 @@ public async Task Production()
     ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
     ExpectNoMsg();
-
-    var child1 = await Sys.ActorSelection("/user/Parent/Child1").ResolveOne(5.Seconds());
-    child1.Path.Name.Should().Be("Child1");
-
-    var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
-    child2.Path.Name.Should().Be("Child2");
 }
 ```
 ```csharp
