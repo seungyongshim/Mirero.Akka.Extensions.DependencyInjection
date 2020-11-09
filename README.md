@@ -4,8 +4,6 @@
 public async Task Production()
 {
     var services = new ServiceCollection();
-    services.AddTransient<ParentActor>();
-    services.AddTransient<ChildActor>();
     services.AddAkka(Sys);
 
     Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
@@ -37,8 +35,6 @@ public async Task Check_Child_Actor_Recieved_Messages()
     var services = new ServiceCollection();
     services.AddSingleton<IActorRef>(sp => TestActor);
     services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
-    services.AddTransient<ParentActor>();
-    services.AddTransient<MockChildActor>();
     services.AddAkka(Sys);
 
     Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
