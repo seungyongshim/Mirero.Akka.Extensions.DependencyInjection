@@ -39,10 +39,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var assemblies = GetAssemblies(new[]
             {
-                $"^{Assembly.GetExecutingAssembly().GetName().Name}$",
-                $"^{Assembly.GetCallingAssembly().GetName().Name}$",
+                $"^{Assembly.GetExecutingAssembly().GetName().Name}",
+                $"^{Assembly.GetCallingAssembly().GetName().Name}",
             }
-            .Concat(autoRegistrationTargetAssemblies ?? new[] { "" }))
+            .Concat(autoRegistrationTargetAssemblies ?? new[] { $"^{Assembly.GetCallingAssembly().GetName().Name}" }))
             .ToList();
 
             services.Scan(sc =>
@@ -65,14 +65,17 @@ namespace Microsoft.Extensions.DependencyInjection
                    }
                    from ext in new[] { "*.dll", "*.exe" }
                    from file in Directory.GetFiles(path, ext)
-                   let assembly = TryLoadFrom(file)
+                   let fileInfo = new FileInfo(file)
+                   where !Regex.IsMatch(fileInfo.Name, "^Microsoft.*")
+                   where !Regex.IsMatch(fileInfo.Name, "^Akka.*")
+                   where !Regex.IsMatch(fileInfo.Name, "^System.*")
+                   where !Regex.IsMatch(fileInfo.Name, "^xunit.*")
+                   let macthedFileNames = regexFilters.Select(x => Regex.IsMatch(fileInfo.Name, x))
+                   let isMachedFileNames = macthedFileNames.Any(x => x == true)
+                   where isMachedFileNames
+                   let assembly = TryLoadFrom(fileInfo.FullName)
                    where assembly != null
-                   where !Regex.IsMatch(assembly.FullName, "^Microsoft.*")
-                   where !Regex.IsMatch(assembly.FullName, "^Akka.*")
-                   where !Regex.IsMatch(assembly.FullName, "^System.*")
-                   where !Regex.IsMatch(assembly.FullName, "^xunit.*")
-                   where regexFilters.Where(x => Regex.IsMatch(assembly.GetName().Name, x))
-                                     .Any()
+                   
                    select assembly;
 
             Assembly TryLoadFrom(string assemblyFile)
