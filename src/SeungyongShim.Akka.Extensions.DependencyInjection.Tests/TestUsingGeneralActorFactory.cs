@@ -14,11 +14,6 @@ namespace Tests
 
     public class TestUsingGeneralActorFactory : TestKit
     {
-        public TestUsingGeneralActorFactory()
-        {
-           
-        }
-
         [Fact]
         public async Task Check_Child_Actor_Recieved_Messages()
         {
@@ -30,6 +25,28 @@ namespace Tests
             Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
 
             var parent = ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+
+            ExpectMsg<string>().Should().Be("Hello, Kid");
+            ExpectMsg<string>().Should().Be("Hello, Kid");
+
+            var child1 = await Sys.ActorSelection("/user/Parent/Child1").ResolveOne(5.Seconds());
+            child1.Path.Name.Should().Be("Child1");
+
+            var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
+            child2.Path.Name.Should().Be("Child2");
+        }
+
+        [Fact]
+        public async Task AddAkka()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IActorRef>(sp => TestActor);
+            services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
+            services.AddSingleton<ActorSystem>(sp => Sys.UseDependencyInjectionServiceProvider(sp));
+            services.AddAkka();
+
+            services.BuildServiceProvider().GetService<ActorSystem>()
+                .ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectMsg<string>().Should().Be("Hello, Kid");
             ExpectMsg<string>().Should().Be("Hello, Kid");

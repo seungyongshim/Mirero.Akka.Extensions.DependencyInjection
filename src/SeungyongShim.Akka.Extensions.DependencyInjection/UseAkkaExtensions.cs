@@ -1,17 +1,61 @@
 namespace Microsoft.Extensions.DependencyInjection
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Reflection;
-    using Akka.Actor;
     using System.Linq;
+    using System.Reflection;
     using System.Text.RegularExpressions;
-    using System;
+    using Akka.Actor;
 
     public static class UseAkkaExtensions
     {
-        
+        public static IServiceCollection AddAkka(this IServiceCollection services, ActorSystem actorSystem, IEnumerable<string> autoRegistrationTargetAssemblies = null)
+        {
+            services.AddSingleton<ActorSystem>(sp => actorSystem);
+            return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
+        }
+
+        public static IServiceCollection AddAkka(this IServiceCollection services,
+                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null)
+        {
+            return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
+        }
+        public static IServiceCollection AddAkka(this IServiceCollection services,
+                                                 string actorSystemName,
+                                                 Akka.Configuration.Config actorSystemConfig = null,
+                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null)
+        {
+            services.AddSingleton<ActorSystem>(sp => ActorSystem.Create(actorSystemName, actorSystemConfig)
+                                                                .UseDependencyInjectionServiceProvider(sp));
+
+            return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
+        }
+
+        private static IServiceCollection AddAkkaInternal(this IServiceCollection services, IEnumerable<string> autoRegistrationTargetAssemblies)
+        {
+            services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
+
+            var assemblies = GetAssemblies(new[]
+            {
+                $"^{Assembly.GetExecutingAssembly().GetName().Name}$",
+                $"^{Assembly.GetCallingAssembly().GetName().Name}$",
+            }
+            .Concat(autoRegistrationTargetAssemblies ?? new[] { "" }))
+            .ToList();
+
+            services.Scan(sc =>
+            {
+                sc.FromAssemblies(assemblies)
+                  .AddClasses(classes => classes.AssignableTo<ReceiveActor>())
+                  .AsSelf()
+                  .WithTransientLifetime();
+            });
+
+            return services;
+        }
+
         private static IEnumerable<Assembly> GetAssemblies(IEnumerable<string> regexFilters)
         {
             return from path in new[]
@@ -42,40 +86,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     return null;
                 }
             }
-        }
-
-        public static IServiceCollection AddAkka(this IServiceCollection services, ActorSystem actorSystem, IEnumerable<string> autoRegistrationTargetAssemblies = null)
-        {
-            services.AddSingleton<ActorSystem>(sp => actorSystem);
-            services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
-
-            var assemblies = GetAssemblies(new[]
-            {
-                $"^{Assembly.GetExecutingAssembly().GetName().Name}$",
-                $"^{Assembly.GetCallingAssembly().GetName().Name}$",
-            }
-            .Concat(autoRegistrationTargetAssemblies?? new[] {""}) )
-            .ToList();
-
-            services.Scan(sc =>
-            {
-                sc.FromAssemblies(assemblies)
-                  .AddClasses(classes => classes.AssignableTo<ReceiveActor>())
-                  .AsSelf()
-                  .WithTransientLifetime();
-            });
-
-            return services;
-        }
-
-        public static IServiceCollection AddAkka(this IServiceCollection services,
-                                                 string actorSystemName,
-                                                 Akka.Configuration.Config actorSystemConfig = null,
-                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null)
-        {
-            var actorSystem = ActorSystem.Create(actorSystemName, actorSystemConfig);
-
-            return services.AddAkka(actorSystem, autoRegistrationTargetAssemblies);
         }
     }
 }
