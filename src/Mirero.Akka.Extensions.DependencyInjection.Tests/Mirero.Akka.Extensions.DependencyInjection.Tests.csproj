@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sample\Sample.csproj" />
-    <ProjectReference Include="..\SeungyongShim.Akka.Extensions.DependencyInjection\SeungyongShim.Akka.Extensions.DependencyInjection.csproj" />
   </ItemGroup>
 
 </Project>

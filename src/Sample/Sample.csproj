@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SeungyongShim.Akka.Extensions.DependencyInjection\SeungyongShim.Akka.Extensions.DependencyInjection.csproj">
-      <Project>{e05ed0cd-51dd-402c-a49d-aaabd7b95a11}</Project>
-      <Name>SeungyongShim.Akka.Extensions.DependencyInjection</Name>
+    <ProjectReference Include="..\Mirero.Akka.Extensions.DependencyInjection\Mirero.Akka.Extensions.DependencyInjection.csproj">
+      <Project>{09f4d131-fb2b-4143-b622-68ef21da7fd2}</Project>
+      <Name>Mirero.Akka.Extensions.DependencyInjection</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
