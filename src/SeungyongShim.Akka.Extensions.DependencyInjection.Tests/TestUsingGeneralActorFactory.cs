@@ -10,6 +10,7 @@ namespace Tests
     using FluentAssertions;
     using FluentAssertions.Extensions;
     using Microsoft.Extensions.DependencyInjection;
+    using Sample;
     using Xunit;
 
     public class TestUsingGeneralActorFactory : TestKit
@@ -20,7 +21,10 @@ namespace Tests
             var services = new ServiceCollection();
             services.AddSingleton<IActorRef>(sp => TestActor);
             services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
-            services.AddAkka(Sys);
+            services.AddAkka(Sys, new[]
+            {
+                "Sample"
+            });
 
             Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
 
@@ -43,7 +47,10 @@ namespace Tests
             services.AddSingleton<IActorRef>(sp => TestActor);
             services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
             services.AddSingleton<ActorSystem>(sp => Sys.UseDependencyInjectionServiceProvider(sp));
-            services.AddAkka();
+            services.AddAkka(new[]
+            {
+                "Sample"
+            });
 
             services.BuildServiceProvider().GetService<ActorSystem>()
                 .ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
@@ -79,24 +86,6 @@ namespace Tests
             child2.Path.Name.Should().Be("Child2");
         }
 
-        public class ParentActor : ReceiveActor
-        {
-            public ParentActor()
-            {
-                var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
-                var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
-
-                childActor1.Tell("Hello, Kid");
-                childActor2.Tell("Hello, Kid");
-            }
-        }
-
-        private class ChildActor : ReceiveActor
-        {
-            public ChildActor()
-            {
-                Receive<string>(_ => { });
-            }
-        }
+        
     }
 }
