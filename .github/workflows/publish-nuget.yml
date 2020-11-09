@@ -3,10 +3,10 @@ name: Publish Nuget
 on:
   push:
     tags:
-      - v*
+    - v*
       
 
-jobs
+jobs:
   build:
     runs-on: windows-latest
     
