@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddAkka(this IServiceCollection services, ActorSystem actorSystem, IEnumerable<string> autoRegistrationTargetAssemblies = null)
         {
-            services.AddSingleton<ActorSystem>(sp => actorSystem);
+            services.AddSingleton<ActorSystem>(sp => actorSystem.UseDependencyInjectionServiceProvider(sp));
             return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
         }
 
