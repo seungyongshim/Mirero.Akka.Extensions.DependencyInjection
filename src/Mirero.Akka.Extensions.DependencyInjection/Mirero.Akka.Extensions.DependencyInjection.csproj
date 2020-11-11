@@ -5,12 +5,14 @@
     <Company>Mirero</Company>
     <Authors>SeungyongShim</Authors>
     <PackageProjectUrl>https://github.com/seungyongshim/SeungyongShim.Akka.Extensions.DependencyInjection</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/seungyongshim/SeungyongShim.Akka.Extensions.DependencyInjection.git</RepositoryUrl>
+    <RepositoryUrl></RepositoryUrl>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <SignAssembly>false</SignAssembly>
-    <Version>1.3.14.30</Version>
+    <Version>1.3.14.100</Version>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Akka.DI.Extensions.DependencyInjection" Version="1.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Scrutor" Version="3.3.0" />
   </ItemGroup>
 

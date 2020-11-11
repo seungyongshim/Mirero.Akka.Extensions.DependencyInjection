@@ -8,12 +8,14 @@ namespace Microsoft.Extensions.DependencyInjection
     using System.Reflection;
     using System.Text.RegularExpressions;
     using Akka.Actor;
+    using Akka.DI.Core;
+    using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
     public static class UseAkkaExtensions
     {
         public static IServiceCollection AddAkka(this IServiceCollection services, ActorSystem actorSystem, IEnumerable<string> autoRegistrationTargetAssemblies = null)
         {
-            services.AddSingleton<ActorSystem>(sp => actorSystem.UseDependencyInjectionServiceProvider(sp));
+            services.AddSingleton<ActorSystem>(sp => actorSystem.UseServiceProvider(sp));
             return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
         }
 
@@ -22,13 +24,14 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
         }
+
         public static IServiceCollection AddAkka(this IServiceCollection services,
                                                  string actorSystemName,
                                                  Akka.Configuration.Config actorSystemConfig = null,
                                                  IEnumerable<string> autoRegistrationTargetAssemblies = null)
         {
             services.AddSingleton<ActorSystem>(sp => ActorSystem.Create(actorSystemName, actorSystemConfig)
-                                                                .UseDependencyInjectionServiceProvider(sp));
+                                                                .UseServiceProvider(sp));
 
             return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
         }
@@ -36,13 +39,17 @@ namespace Microsoft.Extensions.DependencyInjection
         private static IServiceCollection AddAkkaInternal(this IServiceCollection services, IEnumerable<string> autoRegistrationTargetAssemblies)
         {
             services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
+            services.AddHostedService<AkkaHostedService>();
 
             var assemblies = GetAssemblies(new[]
             {
                 $"^{Assembly.GetExecutingAssembly().GetName().Name}",
                 $"^{Assembly.GetCallingAssembly().GetName().Name}",
             }
-            .Concat(autoRegistrationTargetAssemblies ?? new[] { $"^{Assembly.GetCallingAssembly().GetName().Name}" }))
+            .Concat(autoRegistrationTargetAssemblies ?? new[]
+            {
+                $"^{Assembly.GetCallingAssembly().GetName().Name}"
+            }))
             .ToList();
 
             services.Scan(sc =>
@@ -75,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
                    where isMachedFileNames
                    let assembly = TryLoadFrom(fileInfo.FullName)
                    where assembly != null
-                   
+
                    select assembly;
 
             Assembly TryLoadFrom(string assemblyFile)

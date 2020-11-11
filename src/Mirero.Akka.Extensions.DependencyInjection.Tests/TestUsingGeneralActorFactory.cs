@@ -1,15 +1,15 @@
 namespace Tests
 {
-    using System;
-    using System.Reflection;
     using System.Threading.Tasks;
     using Akka.Actor;
     using Akka.DI.Core;
-    using Akka.DI.Extensions.DependencyInjection.TestKit;
     using Akka.TestKit.Xunit2;
     using FluentAssertions;
     using FluentAssertions.Extensions;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Mirero.Akka.Extensions.DependencyInjection;
+    using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
     using Sample;
     using Xunit;
 
@@ -17,18 +17,24 @@ namespace Tests
     {
         [Fact]
         public async Task Check_Child_Actor_Recieved_Messages()
-        { 
-            var services = new ServiceCollection();
-            services.AddSingleton<IActorRef>(sp => TestActor);
-            services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
-            services.AddAkka(Sys, new[]
-            {
-                "Sample"
-            });
+        {
+            var host = Host.CreateDefaultBuilder()
+                           .ConfigureServices(services =>
+                           {
+                               services.AddSingleton<IActorRef>(sp => TestActor);
+                               services.AddSingleton<IPropsFactory<ChildActor>,
+                                   PropsFactory<ChildActor, MockChildActor>>();
 
-            services.BuildServiceProvider()
-                    .GetService<ActorSystem>()
-                    .ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                               services.AddAkka(Sys, new[]
+                               {
+                                   "Sample"
+                               });
+                           })
+                           .Build();
+
+            await host.StartAsync();
+
+            Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectMsg<string>().Should().Be("Hello, Kid");
             ExpectMsg<string>().Should().Be("Hello, Kid");
@@ -38,20 +44,27 @@ namespace Tests
 
             var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
             child2.Path.Name.Should().Be("Child2");
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task Production()
         {
-            var services = new ServiceCollection();
-            services.AddAkka(Sys, new[]
-            {
-                "Sample"
-            });
+            var host = Host.CreateDefaultBuilder()
+                           .ConfigureServices(services =>
+                           {
+                               services.AddAkka(Sys, new[]
+                               {
+                                   "Sample"
+                               });
+                           })
+                           .Build();
 
-            services.BuildServiceProvider()
-                    .GetService<ActorSystem>()
-                    .ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+            await host.StartAsync();
+
+            host.Services.GetService<ActorSystem>()
+                         .ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectNoMsg();
 
@@ -60,8 +73,8 @@ namespace Tests
 
             var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
             child2.Path.Name.Should().Be("Child2");
-        }
 
-        
+            await host.StopAsync();
+        }
     }
 }

@@ -1,4 +1,4 @@
-namespace SeungyongShim.Akka.Extensions.DependencyInjection
+namespace Mirero.Akka.Extensions.DependencyInjection
 {
     using global::Akka.Actor;
 

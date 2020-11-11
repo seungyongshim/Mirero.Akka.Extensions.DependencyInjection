@@ -1,8 +1,9 @@
-namespace SeungyongShim.Akka.Extensions.DependencyInjection
+namespace Mirero.Akka.Extensions.DependencyInjection
 {
     using System;
     using global::Akka.Actor;
     using Microsoft.Extensions.DependencyInjection;
+    using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
     public class DIExt2 : IExtension
     {
