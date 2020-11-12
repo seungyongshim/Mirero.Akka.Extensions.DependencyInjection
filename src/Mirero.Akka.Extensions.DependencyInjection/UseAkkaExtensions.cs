@@ -11,33 +11,16 @@ namespace Microsoft.Extensions.DependencyInjection
     using Akka.DI.Core;
     using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
+    
     public static class UseAkkaExtensions
     {
-        public static IServiceCollection AddAkka(this IServiceCollection services, ActorSystem actorSystem, IEnumerable<string> autoRegistrationTargetAssemblies = null)
+        public static IServiceCollection AddAkka(this IServiceCollection services,
+                                                 ActorSystem actorSystem,
+                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null,
+                                                 Action<ActorSystem> startAction = null)
         {
+            services.AddSingleton<AkkaHostedServiceStart>(sp => x => startAction?.Invoke(x));
             services.AddSingleton<ActorSystem>(sp => actorSystem.UseServiceProvider(sp));
-            return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
-        }
-
-        public static IServiceCollection AddAkka(this IServiceCollection services,
-                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null)
-        {
-            return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
-        }
-
-        public static IServiceCollection AddAkka(this IServiceCollection services,
-                                                 string actorSystemName,
-                                                 Akka.Configuration.Config actorSystemConfig = null,
-                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null)
-        {
-            services.AddSingleton<ActorSystem>(sp => ActorSystem.Create(actorSystemName, actorSystemConfig)
-                                                                .UseServiceProvider(sp));
-
-            return services.AddAkkaInternal(autoRegistrationTargetAssemblies);
-        }
-
-        private static IServiceCollection AddAkkaInternal(this IServiceCollection services, IEnumerable<string> autoRegistrationTargetAssemblies)
-        {
             services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
             services.AddHostedService<AkkaHostedService>();
 

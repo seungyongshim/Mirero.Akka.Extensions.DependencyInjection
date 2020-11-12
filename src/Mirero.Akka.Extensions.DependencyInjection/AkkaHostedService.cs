@@ -7,18 +7,26 @@ namespace Microsoft.Extensions.DependencyInjection
     using Akka.Util.Internal;
     using Microsoft.Extensions.Hosting;
 
+    internal delegate void AkkaHostedServiceStart(ActorSystem actorSystem);
+
     internal class AkkaHostedService : IHostedService
     {
-        public AkkaHostedService(IServiceProvider serviceProvider, ActorSystem actorSystem)
+        public AkkaHostedService(IServiceProvider serviceProvider, ActorSystem actorSystem, AkkaHostedServiceStart akkaHostedServiceStart)
         {
             ServiceProvider = serviceProvider;
             ActorSystem = actorSystem;
+            AkkaHostedServiceStart = akkaHostedServiceStart;
         }
 
         public IServiceProvider ServiceProvider { get; }
         public ActorSystem ActorSystem { get; }
+        public AkkaHostedServiceStart AkkaHostedServiceStart { get; }
 
-        public async Task StartAsync(CancellationToken cancellationToken) => await Task.CompletedTask;
+        public async Task StartAsync(CancellationToken cancellationToken) 
+        {
+            AkkaHostedServiceStart(ActorSystem);
+            await Task.CompletedTask;
+        }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {

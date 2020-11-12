@@ -57,14 +57,14 @@ namespace Tests
                                services.AddAkka(Sys, new[]
                                {
                                    "Sample"
+                               },  sys =>
+                               {
+                                   sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
                                });
                            })
                            .Build();
 
             await host.StartAsync();
-
-            host.Services.GetService<ActorSystem>()
-                         .ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectNoMsg();
 
