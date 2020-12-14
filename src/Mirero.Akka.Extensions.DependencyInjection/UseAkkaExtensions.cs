@@ -16,23 +16,21 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddAkka(this IServiceCollection services,
                                                  ActorSystem actorSystem,
-                                                 IEnumerable<string> autoRegistrationTargetAssemblies = null,
-                                                 Action<ActorSystem> startAction = null)
+                                                 Action<ActorSystem> startAction = null,
+                                                 IEnumerable<string> autoExcludeAssemblies = null)
         {
             services.AddSingleton<AkkaHostedServiceStart>(sp => x => startAction?.Invoke(x));
             services.AddSingleton<ActorSystem>(sp => actorSystem.UseServiceProvider(sp));
             services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
             services.AddHostedService<AkkaHostedService>();
 
-            var assemblies = GetAssemblies(new[]
-            {
-                $"^{Assembly.GetExecutingAssembly().GetName().Name}",
-                $"^{Assembly.GetCallingAssembly().GetName().Name}",
-            }
-            .Concat(autoRegistrationTargetAssemblies ?? new[]
-            {
-                $"^{Assembly.GetCallingAssembly().GetName().Name}"
-            }))
+            var assemblies = GetAssemblies(new []
+                {
+                    "^Microsoft.*",
+                    "^Akka.*",
+                    "^System.*",
+                    "^xunit.*",
+                }.Concat(autoExcludeAssemblies ?? Enumerable.Empty<string>()))
             .ToList();
 
             services.Scan(sc =>
@@ -50,22 +48,15 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return from path in new[]
                    {
-                       Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName),
+                       Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName),
                        Directory.GetCurrentDirectory()
                    }
                    from ext in new[] { "*.dll", "*.exe" }
                    from file in Directory.GetFiles(path, ext)
                    let fileInfo = new FileInfo(file)
-                   where !Regex.IsMatch(fileInfo.Name, "^Microsoft.*")
-                   where !Regex.IsMatch(fileInfo.Name, "^Akka.*")
-                   where !Regex.IsMatch(fileInfo.Name, "^System.*")
-                   where !Regex.IsMatch(fileInfo.Name, "^xunit.*")
-                   let macthedFileNames = regexFilters.Select(x => Regex.IsMatch(fileInfo.Name, x))
-                   let isMachedFileNames = macthedFileNames.Any(x => x == true)
-                   where isMachedFileNames
+                   where !regexFilters.Any(x => Regex.IsMatch(fileInfo.Name, x))
                    let assembly = TryLoadFrom(fileInfo.FullName)
                    where assembly != null
-
                    select assembly;
 
             Assembly TryLoadFrom(string assemblyFile)

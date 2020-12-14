@@ -25,10 +25,7 @@ namespace Tests
                                services.AddSingleton<IPropsFactory<ChildActor>,
                                    PropsFactory<ChildActor, MockChildActor>>();
 
-                               services.AddAkka(Sys, new[]
-                               {
-                                   "Sample"
-                               });
+                               services.AddAkka(Sys);
                            })
                            .Build();
 
@@ -54,10 +51,7 @@ namespace Tests
             var host = Host.CreateDefaultBuilder()
                            .ConfigureServices(services =>
                            {
-                               services.AddAkka(Sys, new[]
-                               {
-                                   "Sample"
-                               },  sys =>
+                               services.AddAkka(Sys, sys =>
                                {
                                    sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
                                });
