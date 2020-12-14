@@ -25,13 +25,14 @@ namespace Tests
                                services.AddSingleton<IPropsFactory<ChildActor>,
                                    PropsFactory<ChildActor, MockChildActor>>();
 
-                               services.AddAkka(Sys);
+                               services.AddAkka(Sys, sys =>
+                               {
+                                   Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                               });
                            })
                            .Build();
 
             await host.StartAsync();
-
-            Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
             ExpectMsg<string>().Should().Be("Hello, Kid");
             ExpectMsg<string>().Should().Be("Hello, Kid");
