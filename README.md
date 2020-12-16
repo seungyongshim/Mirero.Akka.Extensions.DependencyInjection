@@ -18,17 +18,20 @@ class ParentActor : ReceiveActor
 [Fact]
 public async Task Production()
 {
+    // arrange
     var host = Host.CreateDefaultBuilder()
-               .ConfigureServices(services =>
-               {
-                   services.AddAkka(Sys, sys =>
+                   .ConfigureServices(services =>
                    {
-                       sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
-                   });
-               })
-               .Build();
+                       services.AddAkka(Sys, sys =>
+                       {
+                           sys.ActorOf(sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                       });
+                   })
+                   .Build();
 
     await host.StartAsync();
+    
+    // assert
     ExpectNoMsg();
 
     await host.StopAsync();
@@ -49,7 +52,7 @@ public async Task Check_Child_Actor_Recieved_Messages()
 
                        services.AddAkka(Sys, sys =>
                        {
-                           Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                           sys.ActorOf(sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
                        });
                    })
                    .Build();
