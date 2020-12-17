@@ -1,7 +1,7 @@
-namespace Microsoft.Extensions.DependencyInjection
+namespace Akka.DI.Core
 {
     using Akka.Actor;
-    using Akka.DI.Core;
+    using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
     public class PropsFactory<T> : IPropsFactory<T> where T : ActorBase
     {

@@ -1,8 +1,8 @@
-namespace Akka.DI.Extensions.DependencyInjection.TestKit
+namespace Mirero.Akka.Extensions.DependencyInjection
 {
-    using Akka.Actor;
-    using Akka.DI.Core;
-    using Microsoft.Extensions.DependencyInjection;
+    using global::Akka.Actor;
+    using global::Akka.DI.Core;
+    using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
     public class PropsFactory<T, R> : IPropsFactory<T> where T : ActorBase where R : ActorBase
     {

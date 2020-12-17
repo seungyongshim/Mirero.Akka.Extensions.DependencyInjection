@@ -1,18 +1,4 @@
-## 1. Production
-``` csharp
-[Fact]
-public async Task Production()
-{
-    var services = new ServiceCollection();
-    services.AddAkka(Sys);
 
-    Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
-
-    ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
-
-    ExpectNoMsg();
-}
-```
 ```csharp
 class ParentActor : ReceiveActor
 {
@@ -27,19 +13,51 @@ class ParentActor : ReceiveActor
 }
 ```
 
+## 1. Production
+``` csharp
+[Fact]
+public async Task Production()
+{
+    // arrange
+    var host = Host.CreateDefaultBuilder()
+                   .ConfigureServices(services =>
+                   {
+                       services.AddAkka(Sys, sys =>
+                       {
+                           sys.ActorOf(sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                       });
+                   })
+                   .Build();
+
+    await host.StartAsync();
+    
+    // assert
+    ExpectNoMsg();
+
+    await host.StopAsync();
+}
+```
+
 ## 2. UnitTest using MockChildActor
 ```csharp
 [Fact]
 public async Task Check_Child_Actor_Recieved_Messages()
 {
-    var services = new ServiceCollection();
-    services.AddSingleton<IActorRef>(sp => TestActor);
-    services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
-    services.AddAkka(Sys);
+    var host = Host.CreateDefaultBuilder()
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSingleton<IActorRef>(sp => TestActor);
+                       services.AddSingleton<IPropsFactory<ChildActor>,
+                           PropsFactory<ChildActor, MockChildActor>>();
 
-    Sys.UseDependencyInjectionServiceProvider(services.BuildServiceProvider());
+                       services.AddAkka(Sys, sys =>
+                       {
+                           sys.ActorOf(sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                       });
+                   })
+                   .Build();
 
-    ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+    await host.StartAsync();
 
     ExpectMsg<string>().Should().Be("Hello, Kid");
     ExpectMsg<string>().Should().Be("Hello, Kid");
@@ -49,6 +67,8 @@ public async Task Check_Child_Actor_Recieved_Messages()
 
     var child2 = await Sys.ActorSelection("/user/Parent/Child2").ResolveOne(5.Seconds());
     child2.Path.Name.Should().Be("Child2");
+
+    await host.StopAsync();
 }
 ```
 

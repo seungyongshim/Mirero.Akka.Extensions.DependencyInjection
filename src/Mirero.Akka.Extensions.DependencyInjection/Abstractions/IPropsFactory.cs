@@ -1,6 +1,6 @@
-namespace Microsoft.Extensions.DependencyInjection
+namespace Mirero.Akka.Extensions.DependencyInjection.Abstractions
 {
-    using Akka.Actor;
+    using global::Akka.Actor;
 
     public interface IPropsFactory<out T> where T : ActorBase
     {
