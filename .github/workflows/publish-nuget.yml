@@ -36,7 +36,7 @@ jobs:
     - id: Get Version
       uses: seungyongshim/get-version-action@v1.3
     - name: Modification Version
-      uses: |
+      run: |
         cd src/Mirero.Akka.Extensions.DependencyInjection
         sed "s/<Version>0.0.0.000/<Version>${{ steps.get_version.outputs.version }}" ./Mirero.Akka.Extensions.DependencyInjection.csproj
         cat ./Mirero.Akka.Extensions.DependencyInjection.csproj
