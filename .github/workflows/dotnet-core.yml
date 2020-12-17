@@ -1,4 +1,4 @@
-name: .NET Core
+name: CI
 
 on:
   push:
@@ -7,25 +7,30 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-
-    runs-on: windows-latest
-
+  Build-and-Tests:
+    name: Build and Test
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.301
+        dotnet-version: 5.0.101
     - name: Install dependencies
-      run: | 
+      run: |
         cd src
         dotnet restore
     - name: Build
       run: |
         cd src
-        dotnet build --configuration Release --no-restore
+        dotnet build --configuration Debug --no-restore
     - name: Test
-      run: | 
+      run: |
         cd src
-        dotnet test --no-restore --verbosity normal
+        dotnet test --logger "junit;LogFileName=Report.xml"
+    - name: Publish Unit Test Results
+      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:v1.6
+      if: always()
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        files: src/**/*.xml
