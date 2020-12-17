@@ -10,8 +10,23 @@ namespace Tests
     using Microsoft.Extensions.Hosting;
     using Mirero.Akka.Extensions.DependencyInjection;
     using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
-    using Sample;
     using Xunit;
+
+    public class ParentActor : ReceiveActor
+    {
+        public ParentActor()
+        {
+            var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
+            var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
+
+            childActor1.Tell("Hello, Kid");
+            childActor2.Tell("Hello, Kid");
+        }
+    }
+    public class ChildActor : ReceiveActor
+    {
+        public ChildActor() => Receive<string>(_ => { });
+    }
 
     public class TestUsingGeneralActorFactory : TestKit
     {
@@ -22,8 +37,7 @@ namespace Tests
                            .ConfigureServices(services =>
                            {
                                services.AddSingleton<IActorRef>(sp => TestActor);
-                               services.AddSingleton<IPropsFactory<ChildActor>,
-                                   PropsFactory<ChildActor, MockChildActor>>();
+                               services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
 
                                services.AddAkka(Sys, sys =>
                                {
