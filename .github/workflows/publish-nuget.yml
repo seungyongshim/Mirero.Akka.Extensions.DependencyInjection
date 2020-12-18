@@ -38,7 +38,7 @@ jobs:
     - name: Modification Version
       run: |
         cd src/Mirero.Akka.Extensions.DependencyInjection
-        sed "s/<Version>0.0.0.000/<Version>${{ steps.get_version.outputs.version }}" ./Mirero.Akka.Extensions.DependencyInjection.csproj
+        sed "s/<Version>0.0.0.000/<Version>${{ steps.get_version.outputs.version }}/g" ./Mirero.Akka.Extensions.DependencyInjection.csproj
         cat ./Mirero.Akka.Extensions.DependencyInjection.csproj
    #- name: Publish NuGet
    #  uses: brandedoutcast/publish-nuget@v2.5.5
