@@ -48,7 +48,8 @@ public async Task Check_Child_Actor_Recieved_Messages()
                    .ConfigureServices(services =>
                    {
                        services.AddSingleton<IActorRef>(sp => TestActor);
-                       services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
+                       services.AddSingleton<IPropsFactory<ChildActor>, 
+                                             PropsFactory<ChildActor, MockChildActor>>();
 
                        services.AddAkka(Sys, sys =>
                        {
