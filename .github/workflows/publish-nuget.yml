@@ -27,18 +27,12 @@ jobs:
       run: |
         cd src
         dotnet test --logger "junit;LogFileName=Report.xml"
-    - name: Publish Unit Test Results
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:v1.6
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: src/**/*.xml
     - id: get_version
       uses: seungyongshim/get-version-action@v1.3
     - name: Modification Version
       run: |
         cd src/Mirero.Akka.Extensions.DependencyInjection
-        sed "s/<Version>0.0.0.000/<Version>${{ steps.get_version.outputs.version }}/g" ./Mirero.Akka.Extensions.DependencyInjection.csproj
+        sed "s/<Version>0.0.0.000/<Version>${{ steps.get_version.outputs.version }}/g" ./Mirero.Akka.Extensions.DependencyInjection.csproj > ./Mirero.Akka.Extensions.DependencyInjection.csproj
         cat ./Mirero.Akka.Extensions.DependencyInjection.csproj
     - name: Publish NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
