@@ -1,16 +1,23 @@
 ![CI](https://github.com/seungyongshim/Mirero.Akka.Extensions.DependencyInjection/workflows/CI/badge.svg)
 
 ```csharp
-class ParentActor : ReceiveActor
+public class ParentActor : ReceiveActor
 {
     public ParentActor()
     {
         var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
         var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
-        
-        childActor1.Tell("Hello, Kid");
-        childActor2.Tell("Hello, Kid");
+
+        Receive<string>(msg =>
+        {
+            childActor1.Tell($"{msg}, Kid");
+            childActor2.Tell($"{msg}, Kid");
+        });
     }
+}
+public class ChildActor : ReceiveActor
+{
+    public ChildActor() => ReceiveAny(_ => { });
 }
 ```
 
@@ -44,6 +51,7 @@ public async Task Production()
 [Fact]
 public async Task Check_Child_Actor_Recieved_Messages()
 {
+    // Arrange
     var host = Host.CreateDefaultBuilder()
                    .ConfigureServices(services =>
                    {
@@ -51,15 +59,18 @@ public async Task Check_Child_Actor_Recieved_Messages()
                        services.AddSingleton<IPropsFactory<ChildActor>, 
                                              PropsFactory<ChildActor, MockChildActor>>();
 
-                       services.AddAkka(Sys, sys =>
-                       {
-                           sys.ActorOf(sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
-                       });
+                       services.AddAkka(Sys);
                    })
                    .Build();
 
     await host.StartAsync();
+    
+    IActorRef parentActor = Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
 
+    // Act
+    parentActor.Tell("Hello");
+
+    // Assert
     ExpectMsg<string>().Should().Be("Hello, Kid");
     ExpectMsg<string>().Should().Be("Hello, Kid");
 
