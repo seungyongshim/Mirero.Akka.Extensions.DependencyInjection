@@ -19,13 +19,16 @@ namespace Tests
             var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
             var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
 
-            childActor1.Tell("Hello, Kid");
-            childActor2.Tell("Hello, Kid");
+            Receive<string>(msg =>
+            {
+                childActor1.Tell($"{msg}, Kid");
+                childActor2.Tell($"{msg}, Kid");
+            });
         }
     }
     public class ChildActor : ReceiveActor
     {
-        public ChildActor() => Receive<string>(_ => { });
+        public ChildActor() => ReceiveAny(_ => { });
     }
 
     public class TestUsingGeneralActorFactory : TestKit
@@ -33,21 +36,25 @@ namespace Tests
         [Fact]
         public async Task Check_Child_Actor_Recieved_Messages()
         {
+            // Arrange
             var host = Host.CreateDefaultBuilder()
                            .ConfigureServices(services =>
                            {
                                services.AddSingleton<IActorRef>(sp => TestActor);
                                services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
 
-                               services.AddAkka(Sys, sys =>
-                               {
-                                   Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
-                               });
+                               services.AddAkka(Sys);
                            })
                            .Build();
 
             await host.StartAsync();
 
+            IActorRef parentActor = Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+
+            // Act
+            parentActor.Tell("Hello");
+
+            // Assert
             ExpectMsg<string>().Should().Be("Hello, Kid");
             ExpectMsg<string>().Should().Be("Hello, Kid");
 
@@ -63,6 +70,7 @@ namespace Tests
         [Fact]
         public async Task Production()
         {
+            // Arrange
             var host = Host.CreateDefaultBuilder()
                            .ConfigureServices(services =>
                            {
@@ -75,8 +83,10 @@ namespace Tests
 
             await host.StartAsync();
 
-            ExpectNoMsg();
+            // Act
+            ActorSelection("/user/Parent").Tell("Hello");
 
+            // Assert
             var child1 = await Sys.ActorSelection("/user/Parent/Child1").ResolveOne(5.Seconds());
             child1.Path.Name.Should().Be("Child1");
 

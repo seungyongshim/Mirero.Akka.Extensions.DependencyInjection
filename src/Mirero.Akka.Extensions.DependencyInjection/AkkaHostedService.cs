@@ -25,7 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public async Task StartAsync(CancellationToken cancellationToken) 
         {
             AkkaHostedServiceStart(ActorSystem);
-            await Task.CompletedTask;
+
+            await Task.Delay(300);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
