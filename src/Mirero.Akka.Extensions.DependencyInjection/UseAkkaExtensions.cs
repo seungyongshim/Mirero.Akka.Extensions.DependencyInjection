@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     return Assembly.LoadFrom(assemblyFile);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return null;
                 }
