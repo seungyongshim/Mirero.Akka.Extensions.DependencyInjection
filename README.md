@@ -48,7 +48,6 @@ public async Task Production()
 
 ## 2. UnitTest using MockChildActor
 ```csharp
-[Fact]
 public async Task Check_Child_Actor_Recieved_Messages()
 {
     // Arrange
@@ -56,21 +55,22 @@ public async Task Check_Child_Actor_Recieved_Messages()
                    .ConfigureServices(services =>
                    {
                        services.AddSingleton<IActorRef>(sp => TestActor);
-                       services.AddSingleton<IPropsFactory<ChildActor>, 
-                                             PropsFactory<ChildActor, MockChildActor>>();
+                       services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
 
                        services.AddAkka(Sys);
                    })
                    .Build();
 
     await host.StartAsync();
-    
-    IActorRef parentActor = Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+
+    var parentActor = ActorOfAsTestActorRef<ParentActor>(Sys.DI().PropsFactory<ParentActor>().Create(),"Parent");
 
     // Act
     parentActor.Tell("Hello");
 
     // Assert
+    parentActor.UnderlyingActor.LastStringMessage.Should().Be("Hello");
+
     ExpectMsg<string>().Should().Be("Hello, Kid");
     ExpectMsg<string>().Should().Be("Hello, Kid");
 
