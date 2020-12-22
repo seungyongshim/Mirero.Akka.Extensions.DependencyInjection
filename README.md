@@ -55,7 +55,8 @@ public async Task Check_Child_Actor_Recieved_Messages()
                    .ConfigureServices(services =>
                    {
                        services.AddSingleton<IActorRef>(sp => TestActor);
-                       services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
+                       services.AddSingleton<IPropsFactory<ChildActor>, 
+                                             PropsFactory<ChildActor, MockChildActor>>();
 
                        services.AddAkka(Sys);
                    })
@@ -63,7 +64,9 @@ public async Task Check_Child_Actor_Recieved_Messages()
 
     await host.StartAsync();
 
-    var parentActor = ActorOfAsTestActorRef<ParentActor>(Sys.DI().PropsFactory<ParentActor>().Create(),"Parent");
+    var parentActor = ActorOfAsTestActorRef<ParentActor>(Sys.DI()
+                                                            .PropsFactory<ParentActor>()
+                                                            .Create(),"Parent");
 
     // Act
     parentActor.Tell("Hello");
