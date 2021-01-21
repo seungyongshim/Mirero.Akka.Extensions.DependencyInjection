@@ -2,8 +2,8 @@ namespace Tests
 {
     using System.Threading.Tasks;
     using Akka.Actor;
-    using Akka.DI.Core;
     using Akka.TestKit.Xunit2;
+    using Akka.DependencyInjection;
     using FluentAssertions;
     using FluentAssertions.Extensions;
     using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +16,8 @@ namespace Tests
     {
         public ParentActor()
         {
-            var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
-            var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
+            var childActor1 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(), "Child1");
+            var childActor2 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(), "Child2");
 
             Receive<string>(msg =>
             {
@@ -40,19 +40,20 @@ namespace Tests
             var host = Host.CreateDefaultBuilder()
                            .ConfigureServices(services =>
                            {
-                               services.AddSingleton<IActorRef>(sp => TestActor);
+                               services.AddSingleton(sp => TestActor as IActorRef<MockChildActor>);
                                services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
 
-                               services.AddAkka(Sys);
+                               services.AddAkka(Sys, sys =>
+                               {
+                                   sys.ActorOf(sys.PropsFactory<ParentActor>().Create(), "Parent");
+                               });
                            })
                            .Build();
 
             await host.StartAsync();
 
-            IActorRef parentActor = Sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
-
             // Act
-            parentActor.Tell("Hello");
+            ActorSelection("/user/Parent").Tell("Hello");
 
             // Assert
             ExpectMsg<string>().Should().Be("Hello, Kid");
@@ -76,7 +77,7 @@ namespace Tests
                            {
                                services.AddAkka(Sys, sys =>
                                {
-                                   sys.ActorOf(Sys.DI().PropsFactory<ParentActor>().Create(), "Parent");
+                                   sys.ActorOf(sys.PropsFactory<ParentActor>().Create(), "Parent");
                                });
                            })
                            .Build();
