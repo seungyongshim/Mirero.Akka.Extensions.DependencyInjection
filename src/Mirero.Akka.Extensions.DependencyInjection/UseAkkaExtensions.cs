@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection
     using System.Reflection;
     using System.Text.RegularExpressions;
     using Akka.Actor;
-    using Akka.DI.Core;
+    using Akka.DependencyInjection;
     using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
     
@@ -19,8 +19,10 @@ namespace Microsoft.Extensions.DependencyInjection
                                                  Action<ActorSystem> startAction = null,
                                                  IEnumerable<string> autoExcludeAssemblies = null)
         {
+            services.AddSingleton<ServiceProviderSetup>();
+            services.AddSingleton<ServiceProvider>();
+            services.AddSingleton<ActorSystem>(sp => actorSystem);
             services.AddSingleton<AkkaHostedServiceStart>(sp => x => startAction?.Invoke(x));
-            services.AddSingleton<ActorSystem>(sp => actorSystem.UseServiceProvider(sp));
             services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
             services.AddHostedService<AkkaHostedService>();
 
