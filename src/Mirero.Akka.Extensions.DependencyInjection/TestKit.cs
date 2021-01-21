@@ -16,7 +16,7 @@ namespace Mirero.Akka.Extensions.DependencyInjection
 
     public class MockChildActor : ReceiveActor
     {
-        public MockChildActor(IActorRef<MockChildActor> testActor) =>
+        public MockChildActor(IActorRef testActor) =>
             ReceiveAny(o => testActor.Forward(o));
     }
 }

@@ -9,19 +9,25 @@ namespace Microsoft.Extensions.DependencyInjection
     using System.Text.RegularExpressions;
     using Akka.Actor;
     using Akka.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
     using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
     
     public static class UseAkkaExtensions
     {
-        public static IServiceCollection AddAkka(this IServiceCollection services,
-                                                 ActorSystem actorSystem,
+        public static IHostBuilder UseAkka(this IHostBuilder host,
+                                           Action<ActorSystem> startAction = null,
+                                           IEnumerable<string> autoExcludeAssemblies = null)
+        {
+            return host.ConfigureServices((context, services) =>
+            {
+                services.AddAkka(startAction, autoExcludeAssemblies);
+            });
+        }
+        internal static IServiceCollection AddAkka(this IServiceCollection services,
                                                  Action<ActorSystem> startAction = null,
                                                  IEnumerable<string> autoExcludeAssemblies = null)
         {
-            services.AddSingleton<ServiceProviderSetup>();
-            services.AddSingleton<ServiceProvider>();
-            services.AddSingleton<ActorSystem>(sp => actorSystem);
             services.AddSingleton<AkkaHostedServiceStart>(sp => x => startAction?.Invoke(x));
             services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
             services.AddHostedService<AkkaHostedService>();
