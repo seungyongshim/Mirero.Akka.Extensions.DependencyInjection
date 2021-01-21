@@ -1,4 +1,4 @@
-namespace Akka.DI.Core
+namespace Akka.DependencyInjection
 {
     using Akka.Actor;
     using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
@@ -9,6 +9,6 @@ namespace Akka.DI.Core
 
         public ActorSystem ActorSystem { get; }
 
-        public Props Create() => ActorSystem.DI().Props<T>();
+        public Props Create(params object [] args) => ServiceProvider.For(ActorSystem).Props<T>(args);
     }
 }
