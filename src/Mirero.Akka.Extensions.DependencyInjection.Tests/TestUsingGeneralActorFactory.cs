@@ -11,15 +11,20 @@ using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 using Akka.Actor.Setup;
+using System;
 
 namespace Tests
 {
+    public interface ILogic { }
+
+    public class Logic : ILogic { }
+
     public class ParentActor : ReceiveActor
     {
         public ParentActor()
         {
-            var childActor1 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(), "Child1");
-            var childActor2 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(), "Child2");
+            var childActor1 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(Self), "Child1");
+            var childActor2 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(Self), "Child2");
 
             Receive<string>(msg =>
             {
@@ -30,7 +35,7 @@ namespace Tests
     }
     public class ChildActor : ReceiveActor
     {
-        public ChildActor() => ReceiveAny(_ => { });
+        public ChildActor(IServiceProvider sp, ILogic logic, IActorRef actorRef) => ReceiveAny(_ => { });
     }
 
     public class TestUsingGeneralActorFactory 
@@ -86,6 +91,7 @@ namespace Tests
                                services.AddSingleton(sp =>
                                    new TestKit(BootstrapSetup.Create()
                                                              .And(ServiceProviderSetup.Create(sp))));
+                               services.AddTransient<ILogic, Logic>();
                                services.AddSingleton(sp => sp.GetService<TestKit>().Sys);
                            })
                            .UseAkka(sys =>

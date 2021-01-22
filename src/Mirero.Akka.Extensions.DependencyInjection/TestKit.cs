@@ -1,5 +1,8 @@
+using System;
+using System.Linq;
 using global::Akka.Actor;
 using global::Akka.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Mirero.Akka.Extensions.DependencyInjection.Abstractions;
 
 namespace Mirero.Akka.Extensions.DependencyInjection
@@ -16,7 +19,13 @@ namespace Mirero.Akka.Extensions.DependencyInjection
 
     public class MockChildActor : ReceiveActor
     {
-        public MockChildActor(IActorRef testActor) =>
+        public MockChildActor(IServiceProvider sp) : this(sp, default) { }
+        public MockChildActor(IServiceProvider sp, object o1) : this(sp, o1, default) { }
+        public MockChildActor(IServiceProvider sp, object o1, object o2) : this(sp, o1, o2, default) { }
+        public MockChildActor(IServiceProvider sp, object o1, object o2, object o3)
+        {
+            var testActor = sp.GetService<IActorRef>();
             ReceiveAny(o => testActor.Forward(o));
+        }
     }
 }
