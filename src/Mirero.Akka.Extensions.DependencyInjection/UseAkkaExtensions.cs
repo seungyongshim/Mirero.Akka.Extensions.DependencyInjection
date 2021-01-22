@@ -32,52 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(IPropsFactory<>), typeof(PropsFactory<>));
             services.AddHostedService<AkkaHostedService>();
 
-            var assemblies = GetAssemblies(new []
-                {
-                    "^Microsoft.*",
-                    "^Akka.*",
-                    "^System.*",
-                    "^xunit.*",
-                }.Concat(autoExcludeAssemblies ?? Enumerable.Empty<string>()))
-            .ToList();
-
-            services.Scan(sc =>
-            {
-                sc.FromAssemblies(assemblies)
-                  .AddClasses(classes => classes.AssignableTo<ReceiveActor>())
-                  .AsSelf()
-                  .WithTransientLifetime();
-            });
-
             return services;
-        }
-
-        private static IEnumerable<Assembly> GetAssemblies(IEnumerable<string> regexFilters)
-        {
-            return from path in new[]
-                   {
-                       Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName),
-                       Directory.GetCurrentDirectory()
-                   }
-                   from ext in new[] { "*.dll", "*.exe" }
-                   from file in Directory.GetFiles(path, ext)
-                   let fileInfo = new FileInfo(file)
-                   where !regexFilters.Any(x => Regex.IsMatch(fileInfo.Name, x))
-                   let assembly = TryLoadFrom(fileInfo.FullName)
-                   where assembly != null
-                   select assembly;
-
-            Assembly TryLoadFrom(string assemblyFile)
-            {
-                try
-                {
-                    return Assembly.LoadFrom(assemblyFile);
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
         }
     }
 }
