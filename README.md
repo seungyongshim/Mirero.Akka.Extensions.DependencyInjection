@@ -5,8 +5,8 @@ public class ParentActor : ReceiveActor
 {
     public ParentActor()
     {
-        var childActor1 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child1");
-        var childActor2 = Context.ActorOf(Context.DI().PropsFactory<ChildActor>().Create(), "Child2");
+        var childActor1 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(), "Child1");
+        var childActor2 = Context.ActorOf(Context.PropsFactory<ChildActor>().Create(), "Child2");
 
         Receive<string>(msg =>
         {
