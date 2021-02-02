@@ -12,7 +12,7 @@
     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
-    <PackageReference Include="JunitXml.TestLogger" Version="2.1.78" />
+    <PackageReference Include="JunitXml.TestLogger" Version="2.1.81" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
