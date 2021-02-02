@@ -12,6 +12,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Akka.Actor.Setup;
 using System;
+using System.Linq;
 
 namespace Tests
 {
@@ -50,13 +51,14 @@ namespace Tests
                                services.AddSingleton(sp =>
                                    new TestKit(BootstrapSetup.Create()
                                                              .And(ServiceProviderSetup.Create(sp))));
-                               services.AddSingleton(sp => sp.GetService<TestKit>().Sys);
-                               services.AddSingleton(sp => sp.GetService<TestKit>().TestActor);
-                               services.AddSingleton<IPropsFactory<ChildActor>, PropsFactory<ChildActor, MockChildActor>>();
+                               services.AddTransient<ILogic, Logic>();
                            })
                            .UseAkka(sys =>
                            {
                                sys.ActorOf(sys.PropsFactory<ParentActor>().Create(), "Parent");
+                           }, new[]
+                           {
+                               typeof(ChildActor),
                            })
                            .Build();
 
@@ -91,8 +93,10 @@ namespace Tests
                                services.AddSingleton(sp =>
                                    new TestKit(BootstrapSetup.Create()
                                                              .And(ServiceProviderSetup.Create(sp))));
-                               services.AddTransient<ILogic, Logic>();
                                services.AddSingleton(sp => sp.GetService<TestKit>().Sys);
+
+                               services.AddTransient<ILogic, Logic>();
+                               
                            })
                            .UseAkka(sys =>
                            {
