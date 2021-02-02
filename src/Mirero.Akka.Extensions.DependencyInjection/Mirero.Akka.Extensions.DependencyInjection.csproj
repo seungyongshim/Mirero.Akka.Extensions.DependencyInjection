@@ -1,32 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="../common.props" />
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Company>Mirero</Company>
-    <Authors>SeungyongShim</Authors>
-    <PackageProjectUrl>https://github.com/seungyongshim/SeungyongShim.Akka.Extensions.DependencyInjection</PackageProjectUrl>
-    <RepositoryUrl></RepositoryUrl>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <SignAssembly>false</SignAssembly>
-    <Version>0.0.0.000</Version>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <TargetFramework>$(NetStandardLibVersion)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="LICENSE" />
-    <None Include="LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Akka" Version="1.4.15" />
-    <PackageReference Include="Akka.DependencyInjection" Version="1.4.15" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Akka" Version="$(AkkaVersion)" />
+    <PackageReference Include="Akka.DependencyInjection" Version="$(AkkaVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MsExtVersion)" />
   </ItemGroup>
 
 </Project>
