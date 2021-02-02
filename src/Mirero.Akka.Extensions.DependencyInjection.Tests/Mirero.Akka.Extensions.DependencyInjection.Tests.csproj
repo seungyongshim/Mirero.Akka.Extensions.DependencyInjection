@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mirero.Akka.Extensions.DependencyInjection\Mirero.Akka.Extensions.DependencyInjection.csproj" />
-    <ProjectReference Include="..\Mirero.Akka.Extensions.DependencyInjection.TestKit\Mirero.Akka.Extensions.DependencyInjection.XUnit2.csproj" />
+    <ProjectReference Include="..\Mirero.Akka.Extensions.DependencyInjection.XUnit2\Mirero.Akka.Extensions.DependencyInjection.XUnit2.csproj" />
   </ItemGroup>
 
 </Project>
