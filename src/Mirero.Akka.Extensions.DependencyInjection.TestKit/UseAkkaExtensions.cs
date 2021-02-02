@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Akka.Actor;
+using Akka.Actor.Setup;
 using Akka.TestKit.Xunit2;
 using Microsoft.Extensions.Hosting;
 using Mirero.Akka.Extensions.DependencyInjection;
@@ -13,26 +14,21 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static class UseAkkaTestKitExtensions
     {
-        public static IHostBuilder UseAkka(this IHostBuilder host,
-                                           Action<ActorSystem> startAction,
-                                           bool useTestKit)
-        {
-            return useTestKit ? host.UseAkka(startAction, Enumerable.Empty<Type>())
-                              : host.UseAkka(startAction);
-        }
-        public static IHostBuilder UseAkka(this IHostBuilder host,
-                                           Action<ActorSystem> startAction = null,
+        public static IHostBuilder UseAkkaXUnit2(this IHostBuilder host) =>
+            host.UseAkkaXUnit2(Enumerable.Empty<Type>());
+
+        public static IHostBuilder UseAkkaXUnit2(this IHostBuilder host,
                                            IEnumerable<Type> mockActors = null)
         {
             return host.ConfigureServices((context, services) =>
             {
-                services.AddAkka(startAction);
-                services.UseAkkaTestKit(mockActors ?? Enumerable.Empty<Type>());
+                services.AddAkkaTestKit(mockActors ?? Enumerable.Empty<Type>());
             });
         }
 
-        private static IServiceCollection UseAkkaTestKit(this IServiceCollection services, IEnumerable<Type> mockActors)
+        private static IServiceCollection AddAkkaTestKit(this IServiceCollection services, IEnumerable<Type> mockActors)
         {
+            services.AddSingleton(sp => new TestKit(sp.GetService<ActorSystemSetup>()));
             services.AddSingleton<GetTestActor>(sp => () => sp.GetService<TestKit>().TestActor);
             services.AddSingleton(sp => sp.GetService<TestKit>().Sys);
 

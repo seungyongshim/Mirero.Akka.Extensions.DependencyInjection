@@ -49,14 +49,15 @@ namespace Tests
                            .ConfigureServices(services =>
                            {
                                services.AddSingleton(sp =>
-                                   new TestKit(BootstrapSetup.Create()
-                                                             .And(ServiceProviderSetup.Create(sp))));
+                                   BootstrapSetup.Create().And(ServiceProviderSetup.Create(sp)));
+
                                services.AddTransient<ILogic, Logic>();
                            })
-                           .UseAkka(sys =>
+                           .UseAkka("TestSystem", sys =>
                            {
                                sys.ActorOf(sys.PropsFactory<ParentActor>().Create(), "Parent");
-                           }, new[]
+                           })
+                           .UseAkkaXUnit2(new[]
                            {
                                typeof(ChildActor),
                            })
@@ -91,17 +92,16 @@ namespace Tests
                            .ConfigureServices(services =>
                            {
                                services.AddSingleton(sp =>
-                                   new TestKit(BootstrapSetup.Create()
-                                                             .And(ServiceProviderSetup.Create(sp))));
-                               services.AddSingleton(sp => sp.GetService<TestKit>().Sys);
+                                   BootstrapSetup.Create().And(ServiceProviderSetup.Create(sp)));
 
                                services.AddTransient<ILogic, Logic>();
-                               
+
                            })
-                           .UseAkka(sys =>
+                           .UseAkka("TestSystem", sys =>
                            {
                                sys.ActorOf(sys.PropsFactory<ParentActor>().Create(), "Parent");
                            })
+                           .UseAkkaXUnit2()
                            .Build();
 
             await host.StartAsync();
