@@ -39,6 +39,7 @@ jobs:
       with:
         # Filepath of the project to be packaged, relative to root of repository
         PROJECT_FILE_PATH:  src/Mirero.Akka.Extensions.DependencyInjection/Mirero.Akka.Extensions.DependencyInjection.csproj
+        VERSION_FILE_PATH: src/common.props 
         NUGET_KEY: ${{ secrets.api }}
         INCLUDE_SYMBOLS: true
         TAG_COMMIT: false
@@ -47,6 +48,7 @@ jobs:
       with:
         # Filepath of the project to be packaged, relative to root of repository
         PROJECT_FILE_PATH:  src/Mirero.Akka.Extensions.DependencyInjection.XUnit2/Mirero.Akka.Extensions.DependencyInjection.XUnit2.csproj
+        VERSION_FILE_PATH: src/common.props  
         NUGET_KEY: ${{ secrets.api }}
         INCLUDE_SYMBOLS: true
         TAG_COMMIT: false
